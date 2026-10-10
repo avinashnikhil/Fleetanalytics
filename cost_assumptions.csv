@@ -1,7 +1,0 @@
-item,value
-robot_depreciation_per_day,7.0
-maintenance_per_km,0.1
-energy_per_km,0.01
-operator_per_minute,0.6
-handoff_per_intervention,1.5
-overhead_per_mission,0.4
