@@ -15,7 +15,6 @@ from pathlib import Path
 import duckdb
 import pandas as pd
 import plotly.graph_objects as go
-import plotly.io as pio
 import streamlit as st
 from plotly.subplots import make_subplots
 
@@ -26,18 +25,12 @@ from plotly.subplots import make_subplots
 # both on my computer and on Streamlit Community Cloud.
 DATABASE_FILE = str(Path(__file__).parent / "fleet.duckdb")
 
-AUTHOR_NAME = "Avinash Nikhil Chitra"   # shown in the footer
+AUTHOR_NAME = "Avinash"   # shown in the footer
 
-# --- Netflix-style dark theme -----------------------------------------
-# The chart colours below were checked with a colour-blind-safety and
-# contrast validator against a pure black background.
-CHART_TEMPLATE = "plotly_dark+netflix_dark"  # dark base + my own tweaks (see below)
-CHART_MAIN_COLOR = "#07A3CD"            # vivid azure for normal bars and lines
-CHART_HIGHLIGHT_COLOR = "#E50914"       # Netflix red to pick out the "bad" item
-CHART_ACCENT_COLOR = "#C98212"          # amber for markers and second lines
-CHART_GREY_COLOR = "#5C5C5C"            # grey for everything that is not the focus
-CHART_TEXT_COLOR = "#E5E5E5"            # light grey text on black
-CHART_GRID_COLOR = "#262626"            # very faint grid lines
+CHART_TEMPLATE = "plotly_white"         # clean white chart style
+CHART_MAIN_COLOR = "#2F6DB5"            # calm blue for normal bars and lines
+CHART_HIGHLIGHT_COLOR = "#E8832A"       # orange to pick out the "bad" item
+CHART_GREY_COLOR = "#B8BEC6"            # grey for everything that is not the focus
 CHART_HEIGHT = 420                      # chart height in pixels
 
 V22_START_DATE = "2026-07-31"           # day 31: v2.2 starts for every robot
@@ -57,134 +50,6 @@ ADDITIVE_COLUMNS = [
 
 # This must be the first Streamlit command in the file
 st.set_page_config(page_title="Robot Fleet Analytics", layout="wide")
-
-# ---------------------------------------------------------------------
-# DARK CHART TEMPLATE
-# A Plotly "template" is a set of default styles that every chart uses.
-# "plotly_dark+netflix_dark" means: start from Plotly's dark template,
-# then apply the tweaks below on top.
-# ---------------------------------------------------------------------
-pio.templates["netflix_dark"] = go.layout.Template(
-    layout=dict(
-        # Transparent backgrounds: the black card behind each chart shows through
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(
-            color=CHART_TEXT_COLOR,
-            family="Helvetica Neue, Helvetica, Arial, sans-serif",
-        ),
-        title=dict(font=dict(size=18, color="#FFFFFF")),
-        # Faint grid lines so the data, not the grid, grabs the eye
-        xaxis=dict(
-            gridcolor=CHART_GRID_COLOR,
-            linecolor="#3A3A3A",
-            zerolinecolor=CHART_GRID_COLOR,
-        ),
-        yaxis=dict(
-            gridcolor=CHART_GRID_COLOR,
-            linecolor="#3A3A3A",
-            zerolinecolor=CHART_GRID_COLOR,
-        ),
-        # The hover tooltip: dark box with a red outline
-        hoverlabel=dict(
-            bgcolor="#1A1A1A",
-            bordercolor=CHART_HIGHLIGHT_COLOR,
-            font=dict(color="#FFFFFF"),
-        ),
-    )
-)
-
-# ---------------------------------------------------------------------
-# PAGE STYLE (CSS)
-# CSS is the language that styles web pages. Streamlit lets us add our own.
-# Needs the theme file .streamlit/config.toml next to app.py's folder root,
-# which sets the dark base colours for the widgets.
-# ---------------------------------------------------------------------
-PAGE_STYLE = """
-<style>
-/* ---- Black page and sidebar ---- */
-html, body, .stApp, [data-testid="stAppViewContainer"] {
-    background-color: #000000 !important;
-}
-[data-testid="stHeader"] { background: rgba(0, 0, 0, 0) !important; }
-[data-testid="stSidebar"] {
-    background-color: #0B0B0B !important;
-    border-right: 1px solid #1F1F1F;
-}
-.block-container { padding-top: 2.4rem; }
-
-/* ---- Title: heavy red gradient, like a streaming-service logo ---- */
-h1 {
-    font-weight: 900 !important;
-    letter-spacing: 0.5px;
-    background: linear-gradient(90deg, #E50914 0%, #FF4D5A 55%, #FF8A5B 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-h2, h3 { font-weight: 800 !important; }
-
-/* ---- KPI tiles: glowing cards, each with its own accent colour ---- */
-[data-testid="stMetric"] {
-    --accent: #E50914;
-    background: linear-gradient(145deg, #1B1B1B 0%, #0C0C0C 100%);
-    border: 1px solid #2B2B2B;
-    border-left: 5px solid var(--accent);
-    border-radius: 12px;
-    padding: 16px 20px;
-    box-shadow: 0 0 22px color-mix(in srgb, var(--accent) 20%, transparent);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-[data-testid="stMetric"]:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 28px color-mix(in srgb, var(--accent) 45%, transparent);
-}
-[data-testid="stMetricLabel"] {
-    color: #A3A3A3 !important;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.78rem;
-}
-[data-testid="stMetricValue"] {
-    color: #FFFFFF !important;
-    font-weight: 800;
-    font-size: 2.5rem;
-}
-/* Tile 1 green, tile 2 red, tile 3 blue, tile 4 amber */
-[data-testid="stHorizontalBlock"] > div:nth-child(1) [data-testid="stMetric"] { --accent: #46D369; }
-[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stMetric"] { --accent: #E50914; }
-[data-testid="stHorizontalBlock"] > div:nth-child(3) [data-testid="stMetric"] { --accent: #22D3EE; }
-[data-testid="stHorizontalBlock"] > div:nth-child(4) [data-testid="stMetric"] { --accent: #FFB020; }
-
-/* ---- Tabs: red underline on the active tab ---- */
-button[data-baseweb="tab"] { font-weight: 700; font-size: 1.02rem; }
-button[data-baseweb="tab"][aria-selected="true"] { color: #FFFFFF !important; }
-[data-baseweb="tab-highlight"] { background-color: #E50914 !important; height: 3px; }
-[data-baseweb="tab-border"] { background-color: #262626 !important; }
-
-/* ---- Each chart sits on its own dark card ---- */
-[data-testid="stPlotlyChart"] {
-    background: linear-gradient(180deg, #111111 0%, #080808 100%);
-    border: 1px solid #1F1F1F;
-    border-radius: 14px;
-    padding: 10px 6px 2px 6px;
-}
-
-/* ---- Expanders, captions, dividers, filter boxes ---- */
-[data-testid="stExpander"] {
-    background: #0E0E0E;
-    border: 1px solid #262626 !important;
-    border-radius: 12px;
-}
-[data-testid="stCaptionContainer"] p { color: #8C8C8C !important; }
-hr { border-color: #262626 !important; }
-[data-baseweb="select"] > div {
-    background-color: #161616 !important;
-    border-color: #2E2E2E !important;
-}
-</style>
-"""
-st.markdown(PAGE_STYLE, unsafe_allow_html=True)
 
 
 # =====================================================================
@@ -376,9 +241,6 @@ def make_daily_trend_chart(daily_dataframe):
             mode="lines",
             name="7-day average",
             line=dict(color=CHART_MAIN_COLOR, width=3.5),
-            # A soft glow under the line so the trend pops on black
-            fill="tozeroy",
-            fillcolor="rgba(7, 163, 205, 0.10)",
         )
     )
 
@@ -399,7 +261,7 @@ def make_daily_trend_chart(daily_dataframe):
                 y0=0,
                 y1=1,
                 yref="paper",
-                line=dict(color=CHART_ACCENT_COLOR, width=1.5, dash="dash"),
+                line=dict(color=CHART_HIGHLIGHT_COLOR, width=1.5, dash="dash"),
             )
             trend_figure.add_annotation(
                 x=marker_date,
@@ -409,7 +271,7 @@ def make_daily_trend_chart(daily_dataframe):
                 showarrow=False,
                 xanchor="left",
                 yanchor="bottom",
-                font=dict(color=CHART_ACCENT_COLOR, size=12),
+                font=dict(color=CHART_HIGHLIGHT_COLOR, size=12),
             )
 
     trend_figure.update_layout(
@@ -493,7 +355,7 @@ def make_pareto_chart(reasons_dataframe):
             y=reason_totals["cumulative_percent"],
             name="Cumulative share",
             mode="lines+markers",
-            line=dict(color=CHART_ACCENT_COLOR, width=3),
+            line=dict(color=CHART_HIGHLIGHT_COLOR, width=3),
         ),
         secondary_y=True,
     )
@@ -586,15 +448,7 @@ def make_on_time_heatmap(hour_zone_dataframe):
             z=heatmap_grid.values,
             x=[f"{int(hour)}:00" for hour in heatmap_grid.columns],
             y=heatmap_grid.index.tolist(),
-            # Low on-time % glows red, middle is neutral grey, high is blue.
-            # (Two colours with a grey middle read clearly for colour-blind viewers.)
-            colorscale=[
-                [0.0, CHART_HIGHLIGHT_COLOR],
-                [0.5, "#3A3A3A"],
-                [1.0, CHART_MAIN_COLOR],
-            ],
-            xgap=2,   # a thin black gap between cells
-            ygap=2,
+            colorscale="RdYlBu",
             colorbar=dict(title="On-time %"),
             hovertemplate=(
                 "Zone: %{y}<br>Start hour: %{x}<br>On-time: %{z:.1f}%<extra></extra>"
@@ -705,13 +559,6 @@ def prepare_robot_table(robot_dataframe):
             "Failure rate (%)": (sorted_table["battery_failure_rate"] * 100).round(2),
         }
     )
-
-
-def show_chart(figure):
-    """Draw a Plotly chart on the page using my own dark colours."""
-    # theme=None tells Streamlit NOT to repaint the chart in its own theme,
-    # so the colours I chose in the template are the ones that show up.
-    st.plotly_chart(figure, theme=None)
 
 
 # =====================================================================
@@ -909,7 +756,7 @@ with overview_tab:
         }
     )
 
-    show_chart(make_daily_trend_chart(daily_table))
+    st.plotly_chart(make_daily_trend_chart(daily_table))
     st.caption(
         "The thick line is the 7-day average. Look for the dip after v2.2 and "
         "the rise after v2.3 reached half the fleet."
@@ -924,7 +771,7 @@ with reliability_tab:
         subset=["interventions_per_1000km"]
     )
     if not version_summary.empty:
-        show_chart(make_version_bar_chart(version_summary))
+        st.plotly_chart(make_version_bar_chart(version_summary))
         st.caption("The orange bar is the version that needs human help most often.")
 
     # (b) By zone, from the filtered slice
@@ -932,7 +779,7 @@ with reliability_tab:
         subset=["interventions_per_1000km"]
     )
     if not zone_summary.empty:
-        show_chart(make_zone_bar_chart(zone_summary))
+        st.plotly_chart(make_zone_bar_chart(zone_summary))
         st.caption("The orange bar is the zone where robots struggle most.")
 
     # (c) Reasons: zone, version and weather filters apply, the date range does not
@@ -949,7 +796,7 @@ with reliability_tab:
     if reasons_table.empty:
         st.info("No interventions match the zone, version and weather filters.")
     else:
-        show_chart(make_pareto_chart(reasons_table))
+        st.plotly_chart(make_pareto_chart(reasons_table))
         st.caption(
             "A few reasons cause most interventions. The date range does not "
             "apply to this chart; zone, version and weather do."
@@ -969,7 +816,7 @@ with delivery_tab:
         [list(selected_zones)],
     )
     if hour_zone_table["completed_deliveries"].sum() > 0:
-        show_chart(make_on_time_heatmap(hour_zone_table))
+        st.plotly_chart(make_on_time_heatmap(hour_zone_table))
         st.caption(
             "Zone filter only; other filters do not apply. Warm colours mark "
             "slots where deliveries are late."
@@ -984,7 +831,7 @@ with delivery_tab:
         subset=["cost_per_delivery"]
     )
     if not daytype_summary.empty:
-        show_chart(make_cost_by_daytype_chart(daytype_summary))
+        st.plotly_chart(make_cost_by_daytype_chart(daytype_summary))
         st.caption(
             "The fixed daily cost of each robot is shared across more trips on "
             "busy days, so cost per delivery drops."
@@ -996,7 +843,7 @@ with delivery_tab:
 with robots_tab:
     robot_view_table = run_query("SELECT * FROM v_by_robot")
 
-    show_chart(make_robot_drain_chart(robot_view_table))
+    st.plotly_chart(make_robot_drain_chart(robot_view_table))
     st.caption(
         "Whole period; filters do not apply. The five orange bars are robots "
         "whose batteries drain fastest."
