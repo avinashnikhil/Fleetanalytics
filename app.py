@@ -15,6 +15,7 @@ from pathlib import Path
 import duckdb
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.io as pio
 import streamlit as st
 from plotly.subplots import make_subplots
 
@@ -27,10 +28,16 @@ DATABASE_FILE = str(Path(__file__).parent / "fleet.duckdb")
 
 AUTHOR_NAME = "Avinash"   # shown in the footer
 
-CHART_TEMPLATE = "plotly_white"         # clean white chart style
-CHART_MAIN_COLOR = "#2F6DB5"            # calm blue for normal bars and lines
-CHART_HIGHLIGHT_COLOR = "#E8832A"       # orange to pick out the "bad" item
-CHART_GREY_COLOR = "#B8BEC6"            # grey for everything that is not the focus
+# --- Netflix-style dark theme -----------------------------------------
+# The chart colours below were checked with a colour-blind-safety and
+# contrast validator against a pure black background.
+CHART_TEMPLATE = "plotly_dark+netflix_dark"  # dark base + my own tweaks (see below)
+CHART_MAIN_COLOR = "#07A3CD"            # vivid azure for normal bars and lines
+CHART_HIGHLIGHT_COLOR = "#E50914"       # Netflix red to pick out the "bad" item
+CHART_ACCENT_COLOR = "#C98212"          # amber for markers and second lines
+CHART_GREY_COLOR = "#5C5C5C"            # grey for everything that is not the focus
+CHART_TEXT_COLOR = "#E5E5E5"            # light grey text on black
+CHART_GRID_COLOR = "#262626"            # very faint grid lines
 CHART_HEIGHT = 420                      # chart height in pixels
 
 V22_START_DATE = "2026-07-31"           # day 31: v2.2 starts for every robot
