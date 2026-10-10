@@ -25,7 +25,7 @@ from plotly.subplots import make_subplots
 # both on my computer and on Streamlit Community Cloud.
 DATABASE_FILE = str(Path(__file__).parent / "fleet.duckdb")
 
-AUTHOR_NAME = "Avinash Nikhil Chitra"   # shown in the footer
+AUTHOR_NAME = "Avinash"   # shown in the footer
 
 CHART_TEMPLATE = "plotly_white"         # clean white chart style
 CHART_MAIN_COLOR = "#2F6DB5"            # calm blue for normal bars and lines
